@@ -44,7 +44,7 @@ def error(update: Update, context: CallbackContext):
 def main():
     bot = Bot(
         token=os.getenv("TG_TOKEN"),
-        # base_url=PROXY,  # delete it if connection via VPN
+        base_url=os.getenv("TG_PROXY")
     )
     updater = Updater(bot=bot, use_context=True)
 
