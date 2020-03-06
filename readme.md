@@ -11,11 +11,12 @@ cd tenth_team_project
 
 Install latest python:
 ```
-version=3.8
+
+python=python3.8
 sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:deadsnakes/ppa
 sudo apt-get update --ignore-missing
-sudo apt install -y  python$version-dev python$version-venv
+sudo apt install -y  $python-dev $python-venv
 ```
 
 Download and install pip (package manager):
