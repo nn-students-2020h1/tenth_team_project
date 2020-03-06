@@ -22,12 +22,12 @@ sudo apt install -y  $python-dev $python-venv
 Download and install pip (package manager):
 ```
 wget https://bootstrap.pypa.io/get-pip.py
-python$version get-pip.py
+$python get-pip.py
 ``` 
 
 Create and activate python environment:
 ```
-python$version -m venv tenth_team_env
+$python -m venv tenth_team_env
 source tenth_team_env/bin/activate
 ```
 
