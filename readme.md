@@ -3,8 +3,8 @@ This is a repository for Telegram bot that will be developed during Intel Academ
 
 ## Clone repository
 ```
-git clone https://github.com/nn-students-2020h1/tenth_team_project.git
-cd tenth_team_project
+git clone https://github.com/nn-students-2020h1/tenth_team.git
+cd tenth_team
 ```
 
 ## Set up and activate python environment
