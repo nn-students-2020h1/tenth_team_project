@@ -4,7 +4,7 @@ import logging
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
-
+from datetime import datetime
 import settings
 
 # comment
@@ -20,22 +20,32 @@ logger = logging.getLogger(__name__)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
-
+def logs(func):
+    def inner(*args, **kwargs):
+        logs_dict = {}
+        logs_dict['user_id'] = args[0].effective_user.id
+        logs_dict['function'] = func.__name__
+        logs_dict['message'] = args[0].message.text
+        logs_dict['time'] = datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S")
+        print(logs_dict)
+        func(*args, **kwargs)
+    return inner
+@logs
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
     update.message.reply_text(f'Привет, {update.effective_user.first_name}!')
 
-
+@logs
 def chat_help(update: Update, context: CallbackContext):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Введи команду /start для начала. ')
 
-
+@logs
 def echo(update: Update, context: CallbackContext):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
-
+@logs
 def error(update: Update, context: CallbackContext):
     """Log Errors caused by Updates."""
     logger.warning(f'Update {update} caused error {context.error}')
