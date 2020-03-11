@@ -27,8 +27,8 @@ $python get-pip.py
 
 Create and activate python environment:
 ```
-$python -m venv tenth_team_env
-source tenth_team_env/bin/activate
+$python -m venv venv
+source venv/bin/activate
 ```
 
 Install requirements:
