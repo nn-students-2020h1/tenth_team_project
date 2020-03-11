@@ -7,7 +7,7 @@ from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandle
 
 import settings
 
-
+# comment
 # if __name__ == '__main__':
 #     print(os.getenv("TG_TOKEN"))
 
