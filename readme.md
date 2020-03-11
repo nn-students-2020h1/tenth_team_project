@@ -43,6 +43,7 @@ pip install -r requirements.txt
 TG_TOKEN = "your_token"
 TG_PROXY = "your_proxy_url"
 ```
+(tg_proxy variable is optional, just don`t write it if not needed)
 
 Run bot
 ```
