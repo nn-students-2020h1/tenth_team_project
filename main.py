@@ -27,33 +27,43 @@ def errors(func):
             logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
     return inner
 
-def logs(func):
-    def inner(*args, **kwargs):
-        logs_dict = {}
-        logs_dict['user_id'] = args[0].effective_user.id
-        logs_dict['function'] = func.__name__
-        logs_dict['message'] = args[0].message.text
-        logs_dict['time'] = datetime.strftime(datetime.now(), "%Y.%m.%d %H:%M:%S")
-        print(logs_dict)
-        func(*args, **kwargs)
+def my_logging(func):
+    def inner(update, context):
+        message = update.message
+        data = {
+            "func": func.__name__,
+
+            "username": message.from_user.username,
+            "first_name": message.from_user.first_name,
+
+            "text": message.text,
+
+            "from_id": message.from_user.id,
+            "chat_id": message.chat.id,
+            "language": message.from_user.language_code,
+        }
+        logger.debug(tuple(data.values()))
+        func(update, context)
+
     return inner
+
 @errors
-@logs
+@my_logging
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
     update.message.reply_text(f'Привет, {update.effective_user.first_name}!')
 @errors
-@logs
+@my_logging
 def chat_help(update: Update, context: CallbackContext):
     """Send a message when the command /help is issued."""
     update.message.reply_text('Введи команду /start для начала. ')
 
-@logs
+@my_logging
 def echo(update: Update, context: CallbackContext):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 @errors
-@logs
+@my_logging
 def error(update: Update, context: CallbackContext):
     """Log Errors caused by Updates."""
     logger.warning(f'Update {update} caused error {context.error}')
@@ -76,6 +86,7 @@ def main():
     # log all errors
     updater.dispatcher.add_error_handler(error)
 
+    logger.info('Start Bot')
     # Start the Bot
     updater.start_polling()
 
@@ -86,5 +97,4 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.info('Start Bot')
     main()
