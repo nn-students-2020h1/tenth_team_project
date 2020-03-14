@@ -19,7 +19,7 @@ LOGGING_CONFIG = {
             "format": "[%(name)s]: %(message)s",
         },
         "light": {
-            "format": "{asctime} {message}",
+            "format": "{asctime} ({levelname:^7}) {message}",
             "datefmt": "%Y-%m-%d %H:%M:%S",
             "style": "{",
         },

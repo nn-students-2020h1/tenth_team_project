@@ -18,16 +18,6 @@ logger = logging.getLogger(__name__)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
-def errors(func):
-    def inner(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except:
-            logger = logging.getLogger()
-            logger.warning(args[0] )
-            logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG)
-    return inner
-
 def msg_logging(func):
     def wrapper(update, context):
         message = update.message
@@ -41,16 +31,18 @@ def msg_logging(func):
             "chat_id": message.chat.id,
             "language": message.from_user.language_code,
         }
-        logger.debug(str(tuple(data.values())), extra={"func_name": func.__name__})
-        func(update, context)
+        try:
+            func(update, context)
+            logger.debug(str(tuple(data.values())), extra={"func_name": func.__name__})
+        except:
+            logger.error(str(tuple(data.values())), extra={"func_name": func.__name__})
     return wrapper
 
-@errors
 @msg_logging
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
     update.message.reply_text(f'Привет, {update.effective_user.first_name}!')
-@errors
+
 @msg_logging
 def chat_help(update: Update, context: CallbackContext):
     """Send a message when the command /help is issued."""
@@ -68,7 +60,6 @@ def msg_history(update: Update, context: CallbackContext):
         last_5 = "".join(file.readlines()[-5:])
         update.message.reply_text(last_5)
 
-@errors
 @msg_logging
 def error(update: Update, context: CallbackContext):
     """Log Errors caused by Updates."""
@@ -89,9 +80,6 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
-
-    # log all errors
-    updater.dispatcher.add_error_handler(error)
 
     logger.info('start bot')
     # Start the Bot
