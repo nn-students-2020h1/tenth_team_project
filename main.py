@@ -71,7 +71,7 @@ def main():
         token=os.getenv("TG_TOKEN"),
         base_url=os.getenv("TG_PROXY")
     )
-    updater = Updater(bot=bot, use_context=True)
+    updater = Updater(bot=bot, use_context=True, workers=-3)
 
     # on different commands - answer in Telegram
     updater.dispatcher.add_handler(CommandHandler('start', start))

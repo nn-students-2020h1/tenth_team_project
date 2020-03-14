@@ -3,8 +3,8 @@ This is a repository for Telegram bot that will be developed during Intel Academ
 
 ## Clone repository
 ```
-git clone https://github.com/nn-students-2020h1/tenth_team_project.git
-cd tenth_team_project
+git clone https://github.com/nn-students-2020h1/tenth_team.git
+cd tenth_team
 ```
 
 ## Set up and activate python environment
@@ -27,8 +27,8 @@ $python get-pip.py
 
 Create and activate python environment:
 ```
-$python -m venv tenth_team_env
-source tenth_team_env/bin/activate
+$python -m venv venv
+source venv/bin/activate
 ```
 
 Install requirements:
@@ -43,6 +43,7 @@ pip install -r requirements.txt
 TG_TOKEN = "your_token"
 TG_PROXY = "your_proxy_url"
 ```
+(tg_proxy variable is optional, just don`t write it if not needed)
 
 Run bot
 ```
