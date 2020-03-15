@@ -1,6 +1,8 @@
 # coding=utf8
 import os
 import logging
+import requests as req
+import json
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
@@ -20,6 +22,22 @@ logger = logging.getLogger(__name__)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
+
+def fact(update: Update, context: CallbackContext):
+    min = 0
+    text = ''
+    r = req.get("https://cat-fact.herokuapp.com/facts")
+    if r.status_code == 200:
+        dict = r.json()
+        k = dict['all']
+        for i in k:
+            if i['upvotes'] > min:
+                min = i['upvotes']
+                text = i['text']
+        update.message.reply_text(f'The most popular comment is: {text}')
+    else:
+        update.message.reply_text('Error accessing the site')
+
 
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
@@ -49,6 +67,7 @@ def main():
     updater = Updater(bot=bot, use_context=True)
 
     # on different commands - answer in Telegram
+    updater.dispatcher.add_handler(CommandHandler('fact', fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
 
