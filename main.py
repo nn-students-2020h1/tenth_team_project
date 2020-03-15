@@ -1,41 +1,40 @@
 # coding=utf8
 import os
 import logging
+import traceback
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
-from datetime import datetime
-import settings
-from config import msg_logs_file
 
-# comment
-# if __name__ == '__main__':
-#     print(os.getenv("TG_TOKEN"))
+from config import msg_logs_file
+import settings
+
 
 
 logger = logging.getLogger(__name__)
+
+def shortMsgInfo(update):
+    message = update.message
+    data = {
+        "username": message.from_user.username,
+        "first_name": message.from_user.first_name,
+
+        "text": message.text,
+
+        "from_id": message.from_user.id,
+        "chat_id": message.chat.id,
+        "language": message.from_user.language_code,
+    }
+    return data
 
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 def msg_logging(func):
+    """Log Messages caused by Updates."""
     def wrapper(update, context):
-        message = update.message
-        data = {
-            "username": message.from_user.username,
-            "first_name": message.from_user.first_name,
-
-            "text": message.text,
-
-            "from_id": message.from_user.id,
-            "chat_id": message.chat.id,
-            "language": message.from_user.language_code,
-        }
-        try:
-            func(update, context)
-            logger.debug(str(tuple(data.values())), extra={"func_name": func.__name__})
-        except:
-            logger.error(str(tuple(data.values())), extra={"func_name": func.__name__})
+        logger.debug(list(shortMsgInfo(update).values()) , extra={"func_name": func.__name__})
+        func(update, context)
     return wrapper
 
 @msg_logging
@@ -54,7 +53,7 @@ def echo(update: Update, context: CallbackContext):
     update.message.reply_text(update.message.text)
 
 @msg_logging
-def msg_history(update: Update, context: CallbackContext):
+def history(update: Update, context: CallbackContext):
     """Echo last 5 message from all users"""
     with open(msg_logs_file, "r", encoding='utf8') as file:
         last_5 = "".join(file.readlines()[-5:])
@@ -62,7 +61,7 @@ def msg_history(update: Update, context: CallbackContext):
 
 def error(update: Update, context: CallbackContext):
     """Log Errors caused by Updates."""
-    logger.warning(f'Update {update} caused error {context.error}')
+    logger.warning(f"{context.error}\n{traceback.format_exc()[:-1]}")
 
 def main():
     bot = Bot(
@@ -74,7 +73,7 @@ def main():
     # on different commands - answer in Telegram
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
-    updater.dispatcher.add_handler(CommandHandler('history', msg_history))
+    updater.dispatcher.add_handler(CommandHandler('history', history))
 
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
