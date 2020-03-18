@@ -1,7 +1,7 @@
 # coding=utf8
 import os
 import logging
-import requests as req
+import requests
 import json
 
 from telegram import Bot, Update
@@ -23,20 +23,14 @@ logger = logging.getLogger(__name__)
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 
-def fact(update: Update, context: CallbackContext):
-    min = 0
-    text = ''
-    r = req.get("https://cat-fact.herokuapp.com/facts")
-    if r.status_code == 200:
-        dict = r.json()
-        k = dict['all']
-        for i in k:
-            if i['upvotes'] > min:
-                min = i['upvotes']
-                text = i['text']
-        update.message.reply_text(f'The most popular comment is: {text}')
-    else:
-        update.message.reply_text('Error accessing the site')
+def most_popular_fact(update: Update, context: CallbackContext):
+    best_fact = None
+    r = requests.get("https://cat-fact.herokuapp.com/facts")
+    for fact in r.json()["all"]:
+        best_fact = fact if best_fact is None else best_fact
+        if fact["upvotes"] > best_fact["upvotes"]:
+            best_fact = fact
+    update.message.reply_text(f'The most popular fact is: {best_fact["text"]}')
 
 
 def start(update: Update, context: CallbackContext):
@@ -67,7 +61,7 @@ def main():
     updater = Updater(bot=bot, use_context=True)
 
     # on different commands - answer in Telegram
-    updater.dispatcher.add_handler(CommandHandler('fact', fact))
+    updater.dispatcher.add_handler(CommandHandler('most_popular_fact', most_popular_fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
 
