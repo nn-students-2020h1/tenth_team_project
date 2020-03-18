@@ -32,16 +32,25 @@ def most_popular_fact(update: Update, context: CallbackContext):
             best_fact = fact
     update.message.reply_text(f'The most popular fact is: {best_fact["text"]}')
 
-def popid(update: Update, context: CallbackContext):
-
-    respons = requests.get("https://cat-fact.herokuapp.com/facts")
-    if respons.status_code == 200:
-        array = [fact["user"]["_id"] for fact in respons. json()["all"] if "user" in fact]
-        update.message.reply_text(f'The most popular commentator_id is: ')
-        update.message.reply_text(max(set(array), key=lambda x: array.count(x)))
-    else:
-        update.message.reply_text('Error accessing the site')
-
+def authors(update: Update, context: CallbackContext):
+    response = requests.get("https://cat-fact.herokuapp.com/facts")
+    authors = [fact["user"] for fact in response. json()["all"] if "user" in fact]
+    board = dict()
+    for author in authors:
+        _id = author["_id"]
+        board.setdefault(_id, 0)
+        board[_id] += 1
+    board = tuple(board.items())
+    board = sorted(board, key=lambda author: author[1], reverse=True)
+    author1 = list(filter(lambda author: author["_id"] == board[0][0], authors))[0]
+    author2 = list(filter(lambda author: author["_id"] == board[1][0], authors))[0]
+    author3 = list(filter(lambda author: author["_id"] == board[2][0], authors))[0]
+    update.message.reply_text(
+        f"The most popular authors are: \n\n"
+        f"#1 {author1['name']['first']} {author1['name']['last']} \nNumber of posts: {board[0][1]}\n"
+        f"#2 {author2['name']['first']} {author2['name']['last']} \nNumber of posts: {board[1][1]}\n"
+        f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
+    )
 
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
@@ -71,7 +80,7 @@ def main():
     updater = Updater(bot=bot, use_context=True)
 
     # on different commands - answer in Telegram
-    updater.dispatcher.add_handler(CommandHandler('popid', popid))
+    updater.dispatcher.add_handler(CommandHandler('authors', authors))
     updater.dispatcher.add_handler(CommandHandler('fact', most_popular_fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
