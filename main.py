@@ -34,7 +34,7 @@ def most_popular_fact(update: Update, context: CallbackContext):
 
 def popid(update: Update, context: CallbackContext):
 
-    respons = req.get("https://cat-fact.herokuapp.com/facts")
+    respons = requests.get("https://cat-fact.herokuapp.com/facts")
     if respons.status_code == 200:
         array = [fact["user"]["_id"] for fact in respons. json()["all"] if "user" in fact]
         update.message.reply_text(f'The most popular commentator_id is: ')
@@ -72,7 +72,7 @@ def main():
 
     # on different commands - answer in Telegram
     updater.dispatcher.add_handler(CommandHandler('popid', popid))
-    updater.dispatcher.add_handler(CommandHandler('fact', fact))
+    updater.dispatcher.add_handler(CommandHandler('fact', most_popular_fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
 
