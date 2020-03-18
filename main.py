@@ -37,6 +37,16 @@ def fact(update: Update, context: CallbackContext):
         update.message.reply_text(f'The most popular comment is: {text}')
     else:
         update.message.reply_text('Error accessing the site')
+def popid(update: Update, context: CallbackContext):
+
+    respons = req.get("https://cat-fact.herokuapp.com/facts")
+    if respons.status_code == 200:
+        array = [fact["user"]["_id"] for fact in respons. json()["all"] if "user" in fact]
+        update.message.reply_text(f'The most popular commentator_id is: ')
+        update.message.reply_text(max(set(array), key=lambda x: array.count(x)))
+    else:
+        update.message.reply_text('Error accessing the site')
+
 
 
 def start(update: Update, context: CallbackContext):
@@ -67,6 +77,7 @@ def main():
     updater = Updater(bot=bot, use_context=True)
 
     # on different commands - answer in Telegram
+    updater.dispatcher.add_handler(CommandHandler('popid', popid))
     updater.dispatcher.add_handler(CommandHandler('fact', fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
