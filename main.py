@@ -2,13 +2,14 @@
 import os
 import logging
 import traceback
+import requests
+import json
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
 
 from config import msg_logs_file
 import settings
-
 
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,37 @@ def msg_logging(func):
         logger.debug(list(shortMsgInfo(update).values()) , extra={"func_name": func.__name__})
         func(update, context)
     return wrapper
+
+@msg_logging
+def most_popular_fact(update: Update, context: CallbackContext):
+    best_fact = None
+    r = requests.get("https://cat-fact.herokuapp.com/facts")
+    for fact in r.json()["all"]:
+        best_fact = fact if best_fact is None else best_fact
+        if fact["upvotes"] > best_fact["upvotes"]:
+            best_fact = fact
+    update.message.reply_text(f'The most popular fact is: {best_fact["text"]}')
+
+@msg_logging
+def authors(update: Update, context: CallbackContext):
+    response = requests.get("https://cat-fact.herokuapp.com/facts")
+    authors = [fact["user"] for fact in response. json()["all"] if "user" in fact]
+    board = dict()
+    for author in authors:
+        _id = author["_id"]
+        board.setdefault(_id, 0)
+        board[_id] += 1
+    board = tuple(board.items())
+    board = sorted(board, key=lambda author: author[1], reverse=True)
+    author1 = list(filter(lambda author: author["_id"] == board[0][0], authors))[0]
+    author2 = list(filter(lambda author: author["_id"] == board[1][0], authors))[0]
+    author3 = list(filter(lambda author: author["_id"] == board[2][0], authors))[0]
+    update.message.reply_text(
+        f"The most popular authors are: \n\n"
+        f"#1 {author1['name']['first']} {author1['name']['last']} \nNumber of posts: {board[0][1]}\n"
+        f"#2 {author2['name']['first']} {author2['name']['last']} \nNumber of posts: {board[1][1]}\n"
+        f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
+    )
 
 @msg_logging
 def start(update: Update, context: CallbackContext):
@@ -71,6 +103,8 @@ def main():
     updater = Updater(bot=bot, use_context=True, workers=-3)
 
     # on different commands - answer in Telegram
+    updater.dispatcher.add_handler(CommandHandler('authors', authors))
+    updater.dispatcher.add_handler(CommandHandler('fact', most_popular_fact))
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
