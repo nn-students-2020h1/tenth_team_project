@@ -48,6 +48,7 @@ def most_popular_fact(update: Update, context: CallbackContext):
             best_fact = fact
     update.message.reply_text(f'The most popular fact is: {best_fact["text"]}')
 
+
 @msg_logging
 def authors(update: Update, context: CallbackContext):
     response = requests.get("https://cat-fact.herokuapp.com/facts")
