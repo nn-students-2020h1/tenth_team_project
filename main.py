@@ -5,6 +5,7 @@ import logging
 import traceback
 import requests
 import json
+from datetime import date
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
@@ -14,6 +15,21 @@ import settings
 
 
 logger = logging.getLogger(__name__)
+def donwloadCovid():
+    today = date.today()
+    day, month, year = today.day, today.month, today.year
+    while True:
+        day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
+        sa = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' \
+             + day_now + '.csv'
+        r = requests.get(sa)
+        if r.status_code == 404:
+            day -= 1
+        else:
+            break
+    with open('covid.csv', 'wb') as file:
+        file.write(r.content)
+    
 
 def shortMsgInfo(update):
     message = update.message
