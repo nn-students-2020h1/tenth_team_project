@@ -69,7 +69,20 @@ def authors(update: Update, context: CallbackContext):
         f"#2 {author2['name']['first']} {author2['name']['last']} \nNumber of posts: {board[1][1]}\n"
         f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
     )
-
+@msg_logging
+def funk_3(update: Update, context: CallbackContext):
+    #funk_1:download new file
+    #funk_2:rewrite new information in file
+    f = open('03-17-2020.cvs', 'r')
+    f1=f.readlines()
+    update.message.reply_text(f1[1:6])
+@msg_logging
+def funk_5(update: Update, context: CallbackContext):
+    #funk_1:download new file
+    #funk_2:rewrite new information in file
+    file = open('03-17-2020.cvs', 'r')
+    file_1=file.readlines()
+    update.message.reply_text(file_1[1:8])
 @msg_logging
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
@@ -109,7 +122,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
-
+    updater.dispatcher.add_handler(CommandHandler('funk3', funk_3))
+    updater.dispatcher.add_handler(CommandHandler('funk5', funk_5))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
