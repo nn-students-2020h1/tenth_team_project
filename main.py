@@ -6,6 +6,7 @@ import traceback
 import requests
 import json
 from datetime import date
+import csv
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 def donwloadCovid():
     report_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
     today = date.today()
-    day, month, year  = today.day, today.month, today.year
+    day, month, year = today.day, today.month, today.year
     while True:
         day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
         last_report_url = f'{report_url}{day_now}.csv'
@@ -34,8 +35,25 @@ def donwloadCovid():
         else:
             break
 
-    with open('covid.csv', 'wb') as file:
+    with open('covid-19.csv', 'wb') as file:
         file.write(r.content)
+
+
+def sortAndRewrite():
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        output_data = []
+        for row in reader:
+            output_data.append(row)
+        sort_output_data = sorted(output_data, key = lambda item: (int(item['Confirmed'])
+                                                                   + int(item['Deaths']) + int(item['Recovered'])), reverse=True)
+
+    with open('covid-19-copy.csv', 'w', newline='') as handle:
+        writer = csv.DictWriter(handle, fieldnames=['Province/State','Country/Region','Last Update',
+                                                    'Confirmed','Deaths','Recovered','Latitude','Longitude'])
+        writer.writeheader()
+        for string in sort_output_data:
+            writer.writerow(string)
 
 
 def shortMsgInfo(update):
