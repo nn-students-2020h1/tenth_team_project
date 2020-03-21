@@ -16,20 +16,27 @@ import settings
 
 logger = logging.getLogger(__name__)
 def donwloadCovid():
+    report_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
     today = date.today()
-    day, month, year = today.day, today.month, today.year
+    day, month, year  = today.day, today.month, today.year
     while True:
         day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
-        sa = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/' \
-             + day_now + '.csv'
-        r = requests.get(sa)
+        last_report_url = f'{report_url}{day_now}.csv'
+        r = requests.get(last_report_url)
         if r.status_code == 404:
             day -= 1
+            if day == 0:
+                day = 31
+                month -= 1
+                if month == 0:
+                    month = 12
+                    year -= 1
         else:
             break
+
     with open('covid.csv', 'wb') as file:
         file.write(r.content)
-    
+
 
 def shortMsgInfo(update):
     message = update.message
