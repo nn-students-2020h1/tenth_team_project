@@ -49,6 +49,36 @@ def sort_and_rewrite_covid_report():
         for string in sort_output_data:
             writer.writerow(string)
 
+def rewrite_covid_report_with_countries():
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        input_data = list(reader)
+
+    output_data = list()
+    for row in input_data:
+        met = False
+        for i in output_data:
+            if row['Country/Region'] == i['Country/Region']:
+                i['Confirmed'] = int(row['Confirmed']) + int(i['Confirmed'])
+                i['Deaths'] = int(row['Deaths']) + int(i['Deaths'])
+                i['Recovered'] = int(row['Recovered']) + int(i['Recovered'])
+                met = True
+        if met:
+            continue
+        out_row = {
+            'Country/Region': row['Country/Region'],
+            'Last Update': row['Last Update'],
+            'Confirmed': row['Confirmed'],
+            'Deaths': row['Deaths'],
+            'Recovered': row['Recovered']
+        }
+        output_data.append(out_row)
+    with open('covid-19.csv', 'w', newline='') as handle:
+        writer = csv.DictWriter(handle, fieldnames=['Country/Region', 'Last Update', 'Confirmed', 'Deaths', 'Recovered'])
+        writer.writeheader()
+        for string in output_data:
+            writer.writerow(string)
+
 def shortMsgInfo(update):
     message = update.message
     data = {
