@@ -83,6 +83,7 @@ def funk_5(update: Update, context: CallbackContext):
     file = open('03-17-2020.cvs', 'r')
     file_1=file.readlines()
     update.message.reply_text(file_1[1:8])
+    
 @msg_logging
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
