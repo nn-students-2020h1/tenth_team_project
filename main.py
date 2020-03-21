@@ -5,7 +5,7 @@ import logging
 import traceback
 import requests
 import json
-from datetime import date
+from datetime import date, timedelta
 import csv
 
 from telegram import Bot, Update
@@ -16,45 +16,38 @@ import settings
 
 
 logger = logging.getLogger(__name__)
-def donwloadCovid():
-    report_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
-    today = date.today()
-    day, month, year = today.day, today.month, today.year
-    while True:
-        day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
-        last_report_url = f'{report_url}{day_now}.csv'
-        r = requests.get(last_report_url)
-        if r.status_code == 404:
-            day -= 1
-            if day == 0:
-                day = 31
-                month -= 1
-                if month == 0:
-                    month = 12
-                    year -= 1
-        else:
-            break
+
+def download_covid_report():
+    reports_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
+
+    def get_response_by_date(date):
+        day, month, year = date.day, date.month, date.year
+        day_now = f'{month // 10}{month % 10}-{day // 10}{day % 10}-{year}'
+        last_report_url = f'{reports_url}{day_now}.csv'
+        return requests.get(last_report_url)
+
+    last_date = date.today()
+    r = get_response_by_date(last_date)
+    while r.status_code == 404:
+        last_date -= timedelta(days=1)
+        r = get_response_by_date(last_date)
 
     with open('covid-19.csv', 'wb') as file:
         file.write(r.content)
 
-
-def sortAndRewrite():
+def sort_and_rewrite_covid_report():
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
-        output_data = []
-        for row in reader:
-            output_data.append(row)
+        output_data = list(reader)
         sort_output_data = sorted(output_data, key = lambda item: (int(item['Confirmed'])
                                                                    + int(item['Deaths']) + int(item['Recovered'])), reverse=True)
 
-    with open('covid-19-copy.csv', 'w', newline='') as handle:
+    with open('covid-19-copy.csv', 'w') as handle:
         writer = csv.DictWriter(handle, fieldnames=['Province/State','Country/Region','Last Update',
                                                     'Confirmed','Deaths','Recovered','Latitude','Longitude'])
         writer.writeheader()
         for string in sort_output_data:
             writer.writerow(string)
-
 
 def shortMsgInfo(update):
     message = update.message
