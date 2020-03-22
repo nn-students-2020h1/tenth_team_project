@@ -75,15 +75,37 @@ def funk_3(update: Update, context: CallbackContext):
     #funk_2:rewrite new information in file
     f = open('03-17-2020.cvs', 'r')
     f1=f.readlines()
-    update.message.reply_text(f1[1:6])
+    update.message.reply_text(str(f1[1]) + str(f1[2]) + str(f1[3]) + str(f1[4]) + str(f1[5]) )
+    
 @msg_logging
 def funk_5(update: Update, context: CallbackContext):
     #funk_1:download new file
     #funk_2:rewrite new information in file
     file = open('03-17-2020.cvs', 'r')
     file_1=file.readlines()
-    update.message.reply_text(file_1[1:8])
-    
+    update.message.reply_text(str(file_1[1])+str(file_1[2])+str(file_1[3])+str(file_1[4])+str(file_1[5])+str(file_1[6])+str(file_1[7]))
+@msg_logging
+def donwloadCoviddate():
+    report_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
+    today = date.today()
+    day, month, year  = today.day, today.month, today.year
+    while True:
+        day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
+        last_report_url = f'{report_url}{day_now}.csv'
+        r = requests.get(last_report_url)
+        if r.status_code == 404:
+            day -= 1
+            if day == 0:
+                day = 31
+                month -= 1
+                if month == 0:
+                    month = 12
+                    year -= 1
+        else:
+            break
+
+    with open('covid.csv', 'wb') as file:
+        file.write(r.content)
 @msg_logging
 def start(update: Update, context: CallbackContext):
     """Send a message when the command /start is issued."""
