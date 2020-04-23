@@ -34,16 +34,15 @@ def download_last_covid_report():
 def sort_and_rewrite_covid_report():
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
-        output_data = list(reader)
-        sort_output_data = sorted(output_data, key = lambda item: (int(item['Confirmed'])
-                                                                   + int(item['Deaths']) + int(item['Recovered'])), reverse=True)
-
-    with open('covid-19-copy.csv', 'w') as handle:
-        writer = csv.DictWriter(handle, fieldnames=['Province/State','Country/Region','Last Update',
-                                                    'Confirmed','Deaths','Recovered','Latitude','Longitude'])
+        fieldnames = reader.fieldnames
+        report = list(reader)
+    result = sorted(report, key=lambda row: int(row["Confirmed"]), reverse=True)
+    with open('covid-19.csv', 'w') as file:
+        writer = csv.DictWriter(file, fieldnames)
         writer.writeheader()
-        for string in sort_output_data:
-            writer.writerow(string)
+        for row in result:
+            writer.writerow(row)
+
 
 def rewrite_covid_report_with_countries():
     with open('covid-19.csv', 'r') as file:
