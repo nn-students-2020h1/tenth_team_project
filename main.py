@@ -77,7 +77,7 @@ def start(update: Update, context: CallbackContext):
 @msg_logging
 def chat_help(update: Update, context: CallbackContext):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Введи команду /start для начала. ')
+    update.message.reply_text('Введи команду /start для начала. Введи команду /history для показа истории бота. Введи команду /fact для показа одного популярного факта.')
 
 @msg_logging
 def echo(update: Update, context: CallbackContext):
