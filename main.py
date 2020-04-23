@@ -17,23 +17,19 @@ import settings
 
 logger = logging.getLogger(__name__)
 
-def download_covid_report():
-    reports_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
 
-    def get_response_by_date(date):
-        day, month, year = date.day, date.month, date.year
-        day_now = f'{month // 10}{month % 10}-{day // 10}{day % 10}-{year}'
-        last_report_url = f'{reports_url}{day_now}.csv'
-        return requests.get(last_report_url)
+def download_last_covid_report():
+    github_folder = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports'
+    report_date = date.today()
+    response, report_url = None, None
+    while response is None or response.status_code == 404:
+        report_url = f"{github_folder}/{report_date.strftime('%m-%d-%Y')}.csv"
+        response = requests.get(report_url)
+        report_date -= timedelta(days=1)
+    logger.debug(f"Отчёт удачно скачан по ссылке {report_url}")
+    with open("covid-19.csv", "wb") as file:
+        file.write(response.content)
 
-    last_date = date.today()
-    r = get_response_by_date(last_date)
-    while r.status_code == 404:
-        last_date -= timedelta(days=1)
-        r = get_response_by_date(last_date)
-
-    with open('covid-19.csv', 'wb') as file:
-        file.write(r.content)
 
 def sort_and_rewrite_covid_report():
     with open('covid-19.csv', 'r') as file:
