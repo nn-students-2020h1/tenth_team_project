@@ -81,27 +81,14 @@ def corona_stats(update: Update, context: CallbackContext):
     update.message.reply_text(f"Five most popular places:\n" + "\n".join(str(row) for row in report[:5]))
 
 @msg_logging
-def funk_5(update: Update, context: CallbackContext):
+def corona_news(update: Update, context: CallbackContext):
     #funk_1:download new file
     #funk_2:rewrite new information in file
-    file = open('03-17-2020.cvs', 'r')
-    file_1=file.readlines()
-    update.message.reply_text(str(file_1[1])+str(file_1[2])+str(file_1[3])+str(file_1[4])+str(file_1[5])+str(file_1[6])+str(file_1[7]))
-@msg_logging
-def donwloadCoviddate():
-    str = str(update.message.text)
-    day=int(str[6:8])
-    month=int(str[8:10])
-    year=int(str[10])
-    report_url = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports/'
-    day_now = f'{month//10}{month%10}-{day//10}{day%10}-{year}'
-    last_report_url = f'{report_url}{day_now}.csv'
-    r = requests.get(last_report_url)
-    if r.status_code==404:
-        update.message.reply_text("None")
-    if r.status_code==200:
-        with open('covid.csv', 'wb') as file:
-            file.write(r.content)
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text("Last infections:\n" + "\n".join(str(row) for row in report[:7]))
+
 
 @msg_logging
 def start(update: Update, context: CallbackContext):
@@ -143,7 +130,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
     updater.dispatcher.add_handler(CommandHandler('corona_stats', corona_stats))
-    updater.dispatcher.add_handler(CommandHandler('funk5', funk_5))
+    updater.dispatcher.add_handler(CommandHandler('corona_news', corona_news))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
