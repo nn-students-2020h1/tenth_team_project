@@ -54,7 +54,7 @@ def rewrite_covid_report_with_countries():
         input_data = list(reader)
     required_fields = [field for field in required_fields if field in fieldnames]
 
-    countries = {}
+    countries = dict()
     for row in input_data:
         if row[country_field] not in countries:
             countries[row[country_field]] = [0 for field in required_fields]
