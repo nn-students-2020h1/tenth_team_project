@@ -4,6 +4,7 @@ import logging
 import traceback
 import requests
 import json
+import csv
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
@@ -70,12 +71,14 @@ def authors(update: Update, context: CallbackContext):
         f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
     )
 @msg_logging
-def funk_3(update: Update, context: CallbackContext):
-    #funk_1:download new file
-    #funk_2:rewrite new information in file
-    f = open('03-17-2020.cvs', 'r')
-    f1=f.readlines()
-    update.message.reply_text(str(f1[1]) + str(f1[2]) + str(f1[3]) + str(f1[4]) + str(f1[5]) )
+def corona_stats(update: Update, context: CallbackContext):
+    logger.info("corona_stats")
+    #func_1:download new file
+    #func_2:rewrite new information in file
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text(f"Five most popular places:\n" + "\n".join(str(row) for row in report[:5]))
 
 @msg_logging
 def funk_5(update: Update, context: CallbackContext):
@@ -139,7 +142,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
-    updater.dispatcher.add_handler(CommandHandler('funk3', funk_3))
+    updater.dispatcher.add_handler(CommandHandler('corona_stats', corona_stats))
     updater.dispatcher.add_handler(CommandHandler('funk5', funk_5))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
