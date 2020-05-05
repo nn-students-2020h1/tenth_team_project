@@ -45,34 +45,31 @@ def sort_and_rewrite_covid_report():
 
 
 def rewrite_covid_report_with_countries():
+    country_field = "Country_Region"
+    required_fields = ["Confirmed", "Deaths", "Recovered", "Active"]
+    all_fields = [country_field] + required_fields
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
+        fieldnames = reader.fieldnames
         input_data = list(reader)
+    required_fields = [field for field in required_fields if field in fieldnames]
 
-    output_data = list()
+    countries = {}
     for row in input_data:
-        met = False
-        for i in output_data:
-            if row['Country/Region'] == i['Country/Region']:
-                i['Confirmed'] = int(row['Confirmed']) + int(i['Confirmed'])
-                i['Deaths'] = int(row['Deaths']) + int(i['Deaths'])
-                i['Recovered'] = int(row['Recovered']) + int(i['Recovered'])
-                met = True
-        if met:
-            continue
-        out_row = {
-            'Country/Region': row['Country/Region'],
-            'Last Update': row['Last Update'],
-            'Confirmed': row['Confirmed'],
-            'Deaths': row['Deaths'],
-            'Recovered': row['Recovered']
-        }
-        output_data.append(out_row)
-    with open('covid-19.csv', 'w', newline='') as handle:
-        writer = csv.DictWriter(handle, fieldnames=['Country/Region', 'Last Update', 'Confirmed', 'Deaths', 'Recovered'])
+        if row[country_field] not in countries:
+            countries[row[country_field]] = [0 for field in required_fields]
+        for i, required_field in enumerate(required_fields):
+            countries[row[country_field]][i] += int(row[required_field])
+
+    output_data = [[country] + fields for country, fields in countries.items()]
+    output_data = [{all_fields[i]: row[i] for i in range(len(row))} for row in output_data]
+    print(output_data)
+    with open('covid-19.csv', 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=[country_field] + required_fields)
         writer.writeheader()
-        for string in output_data:
-            writer.writerow(string)
+        for row in output_data:
+            writer.writerow(row)
+
 
 def shortMsgInfo(update):
     message = update.message
