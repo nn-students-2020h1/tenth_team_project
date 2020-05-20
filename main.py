@@ -1,4 +1,5 @@
 # coding=utf8
+# semaev branch
 import os
 import logging
 import traceback
@@ -84,6 +85,17 @@ def shortMsgInfo(update):
     }
     return data
 
+def sort_covid_by_():
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        fieldnames = reader.fieldnames
+        report = list(reader)
+    result = sorted(report, key=lambda row: row["Last_Update"], reverse=True)
+    with open('covid-19.csv', 'w') as file:
+        writer = csv.DictWriter(file, fieldnames)
+        writer.writeheader()
+        for row in result:
+            writer.writerow(row)
 
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
