@@ -194,8 +194,10 @@ def chat_help(update: Update, context: CallbackContext):
 def echo(update: Update, context: CallbackContext):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
-    parser = UrlParser(update.message["text"])
-    urls = parser.parse()
+    urls = []
+    for word in update.message["text"].split():
+        parser = UrlParser(word)
+        urls += parser.parse()
     update.message.reply_text(f"Найдены ссылки: {urls}") if urls else None
 
 @msg_logging
