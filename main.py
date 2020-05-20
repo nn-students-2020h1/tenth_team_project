@@ -5,6 +5,7 @@ import logging
 import traceback
 import requests
 import json
+from datetime import date, timedelta
 import csv
 
 from telegram import Bot, Update
@@ -15,6 +16,60 @@ import settings
 
 
 logger = logging.getLogger(__name__)
+
+
+def download_last_covid_report():
+    github_folder = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports'
+    report_date = date.today()
+    response, report_url = None, None
+    while response is None or response.status_code == 404:
+        report_url = f"{github_folder}/{report_date.strftime('%m-%d-%Y')}.csv"
+        response = requests.get(report_url)
+        report_date -= timedelta(days=1)
+    logger.debug(f"Отчёт удачно скачан по ссылке {report_url}")
+    with open("covid-19.csv", "wb") as file:
+        file.write(response.content)
+
+
+def sort_and_rewrite_covid_report():
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        fieldnames = reader.fieldnames
+        report = list(reader)
+    result = sorted(report, key=lambda row: int(row["Confirmed"]), reverse=True)
+    with open('covid-19.csv', 'w') as file:
+        writer = csv.DictWriter(file, fieldnames)
+        writer.writeheader()
+        for row in result:
+            writer.writerow(row)
+
+
+def rewrite_covid_report_with_countries():
+    country_field = "Country_Region"
+    required_fields = ["Confirmed", "Deaths", "Recovered", "Active"]
+    all_fields = [country_field] + required_fields
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        fieldnames = reader.fieldnames
+        input_data = list(reader)
+    required_fields = [field for field in required_fields if field in fieldnames]
+
+    countries = dict()
+    for row in input_data:
+        if row[country_field] not in countries:
+            countries[row[country_field]] = [0 for field in required_fields]
+        for i, required_field in enumerate(required_fields):
+            countries[row[country_field]][i] += int(row[required_field])
+
+    output_data = [[country] + fields for country, fields in countries.items()]
+    output_data = [{all_fields[i]: row[i] for i in range(len(row))} for row in output_data]
+    print(output_data)
+    with open('covid-19.csv', 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=[country_field] + required_fields)
+        writer.writeheader()
+        for row in output_data:
+            writer.writerow(row)
+
 
 def shortMsgInfo(update):
     message = update.message
@@ -81,6 +136,25 @@ def authors(update: Update, context: CallbackContext):
         f"#2 {author2['name']['first']} {author2['name']['last']} \nNumber of posts: {board[1][1]}\n"
         f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
     )
+@msg_logging
+def corono_stats(update: Update, context: CallbackContext):
+    logger.info("corono_stats")
+    #func_1:download new file
+    #func_2:rewrite new information in file
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text(f"Five most popular places:\n" + "\n".join(str(row) for row in report[:5]))
+
+@msg_logging
+def corona_news(update: Update, context: CallbackContext):
+    #funk_1:download new file
+    #funk_2:rewrite new information in file
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text("Last infections:\n" + "\n".join(str(row) for row in report[:7]))
+
 
 @msg_logging
 def start(update: Update, context: CallbackContext):
@@ -121,7 +195,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
-
+    updater.dispatcher.add_handler(CommandHandler('corono_stats', corono_stats))
+    updater.dispatcher.add_handler(CommandHandler('corono_news', corona_news))
+    # updater.dispatcher.add_handler(CommandHandler('corona', corona))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
