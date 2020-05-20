@@ -5,7 +5,7 @@ import logging
 import traceback
 import requests
 import json
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import csv
 
 from telegram import Bot, Update
@@ -13,14 +13,14 @@ from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandle
 
 from config import msg_logs_file
 import settings
+import re
 
 
 logger = logging.getLogger(__name__)
 
 
-def download_last_covid_report():
+def download_last_covid_report(report_date=date.today()):
     github_folder = 'https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_daily_reports'
-    report_date = date.today()
     response, report_url = None, None
     while response is None or response.status_code == 404:
         report_url = f"{github_folder}/{report_date.strftime('%m-%d-%Y')}.csv"
@@ -85,7 +85,7 @@ def shortMsgInfo(update):
     }
     return data
 
-def sort_covid_by_():
+def sort_covid_by_date():
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
         fieldnames = reader.fieldnames
@@ -139,17 +139,33 @@ def authors(update: Update, context: CallbackContext):
 @msg_logging
 def corono_stats(update: Update, context: CallbackContext):
     logger.info("corono_stats")
+    dates = []
+    for word in update.message["text"].split():
+        dates_now = re.findall(r"\d\d[-.]\d\d[-.]\d\d\d\d", word)
+        dates.append(tuple(dates_now[0].split("."))) if dates_now else None
+        dates_now = re.findall(r"\d\d\d\d[-.]\d\d[-.]\d\d", word)
+        dates.append(tuple(reversed(dates_now[0].split(".")))) if dates_now else None
+    dates = [f"{d[0]}.{d[1]}.{d[2]}" for d in dates]
+    date_ = datetime.strptime(dates[0], "%d.%m.%Y") if dates else date.today()
     #func_1:download new file
+    download_last_covid_report(date_)
     #func_2:rewrite new information in file
+    sort_and_rewrite_covid_report()
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
         report = list(reader)
+
+        # dates.append(re.findall(r"\d\d\d\d[-.]\d\d[-.]\d\d", word))
+    update.message.reply_text(date_.strftime("%d.%m.%Y"))
     update.message.reply_text(f"Five most popular places:\n" + "\n".join(str(row) for row in report[:5]))
 
 @msg_logging
 def corona_news(update: Update, context: CallbackContext):
     #funk_1:download new file
+    download_last_covid_report()
     #funk_2:rewrite new information in file
+    sort_covid_by_date()
+    rewrite_covid_report_with_countries()
     with open('covid-19.csv', 'r') as file:
         reader = csv.DictReader(file)
         report = list(reader)
@@ -197,6 +213,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('history', history))
     updater.dispatcher.add_handler(CommandHandler('corono_stats', corono_stats))
     updater.dispatcher.add_handler(CommandHandler('corono_news', corona_news))
+    # updater.dispatcher.add_handler(CommandHandler('corono_stats', corono_stats))
+
     # updater.dispatcher.add_handler(CommandHandler('corona', corona))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
