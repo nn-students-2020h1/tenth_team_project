@@ -71,8 +71,8 @@ def authors(update: Update, context: CallbackContext):
         f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
     )
 @msg_logging
-def corona_stats(update: Update, context: CallbackContext):
-    logger.info("corona_stats")
+def corono_stats(update: Update, context: CallbackContext):
+    logger.info("corono_stats")
     #func_1:download new file
     #func_2:rewrite new information in file
     with open('covid-19.csv', 'r') as file:
@@ -129,8 +129,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
-    updater.dispatcher.add_handler(CommandHandler('corona_stats', corona_stats))
-    updater.dispatcher.add_handler(CommandHandler('corona_news', corona_news))
+    updater.dispatcher.add_handler(CommandHandler('corono_stats', corono_stats))
+    updater.dispatcher.add_handler(CommandHandler('corono_news', corona_news))
+    # updater.dispatcher.add_handler(CommandHandler('corona', corona))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
