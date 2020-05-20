@@ -7,6 +7,7 @@ import requests
 import json
 from datetime import date, timedelta, datetime
 import csv
+from url_parser import UrlParser
 
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
