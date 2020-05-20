@@ -9,6 +9,13 @@ from datetime import date, timedelta, datetime
 import csv
 from url_parser import UrlParser
 
+get_protocol = UrlParser.get_url_protocol
+http_replace = UrlParser.http_replace
+http_add_space = UrlParser.http_add_space
+split_by_space = UrlParser.split_by_space
+url_domain = UrlParser.get_url_domain
+url_page = UrlParser.get_url_page
+
 from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Filters, MessageHandler, Updater
 
@@ -187,6 +194,9 @@ def chat_help(update: Update, context: CallbackContext):
 def echo(update: Update, context: CallbackContext):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
+    parser = UrlParser(update.message["text"])
+    urls = parser.parse()
+    update.message.reply_text(f"Найдены ссылки: {urls}") if urls else None
 
 @msg_logging
 def history(update: Update, context: CallbackContext):

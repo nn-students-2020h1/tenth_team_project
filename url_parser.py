@@ -66,7 +66,7 @@ class UrlParser:
                 page = self.get_url_page(domain)
                 url = f"{protocol}://{domain}/{page}"
                 self.url_list.append(url)
-            logger.debug(f"{string} -> {url}")
+            # logger.debug(f"{string} -> {url}")
 
         self.url_list = list(dict.fromkeys(self.url_list).keys())
         return self.url_list
