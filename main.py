@@ -1,5 +1,4 @@
 # coding=utf8
-#pyatkin branch
 import os
 import logging
 import traceback
@@ -125,6 +124,25 @@ def authors(update: Update, context: CallbackContext):
         f"#2 {author2['name']['first']} {author2['name']['last']} \nNumber of posts: {board[1][1]}\n"
         f"#3 {author3['name']['first']} {author3['name']['last']} \nNumber of posts: {board[2][1]}\n"
     )
+@msg_logging
+def corono_stats(update: Update, context: CallbackContext):
+    logger.info("corono_stats")
+    #func_1:download new file
+    #func_2:rewrite new information in file
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text(f"Five most popular places:\n" + "\n".join(str(row) for row in report[:5]))
+
+@msg_logging
+def corona_news(update: Update, context: CallbackContext):
+    #funk_1:download new file
+    #funk_2:rewrite new information in file
+    with open('covid-19.csv', 'r') as file:
+        reader = csv.DictReader(file)
+        report = list(reader)
+    update.message.reply_text("Last infections:\n" + "\n".join(str(row) for row in report[:7]))
+
 
 @msg_logging
 def start(update: Update, context: CallbackContext):
@@ -165,7 +183,9 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', chat_help))
     updater.dispatcher.add_handler(CommandHandler('history', history))
-
+    updater.dispatcher.add_handler(CommandHandler('corono_stats', corono_stats))
+    updater.dispatcher.add_handler(CommandHandler('corono_news', corona_news))
+    # updater.dispatcher.add_handler(CommandHandler('corona', corona))
     # on noncommand i.e message - echo the message on Telegram
     updater.dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
